@@ -2,7 +2,7 @@
 # 🔐 SEGURIDAD Y SECRETOS (CRÍTICO)
 # ==========================================
 # Ignora el archivo de configuración real con tus credenciales
-src/main/resources/application.conf
+
 
 # Archivos de variables de entorno (estándar de la industria)
 .env
