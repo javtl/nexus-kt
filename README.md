@@ -1,42 +1,55 @@
-# nexus-kt
+# Nexus.kt 🛡️ | The Secure AI Agent Bridge
 
-This project was created using the [Ktor Project Generator](https://start.ktor.io).
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+[![Ktor](https://img.shields.io/badge/Ktor-3.0-purple.svg?style=flat&logo=ktor)](https://ktor.io)
+[![Auth0](https://img.shields.io/badge/Auth0-Identity-orange.svg?style=flat&logo=auth0)](https://auth0.com)
 
-Here are some useful links to get you started:
+**Nexus.kt** is a high-performance, asynchronous middleware designed to bridge the gap between **Sovereign Local AI Agents** and real-world actions. 
 
-- [Ktor Documentation](https://ktor.io/docs/home.html)
-- [Ktor GitHub page](https://github.com/ktorio/ktor)
-- The [Ktor Slack chat](https://app.slack.com/client/T09229ZC6/C0A974TJ9). You'll need to [request an invite](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up) to join.
+Built for the **"Authorized to Act: AI Agents with Auth0"** hackathon (Devpost/Okta).
 
-## Features
+---
 
-Here's a list of features included in this project:
+## ⚠️ The Problem: Credential Exposure in AI
+As local LLMs and autonomous agents gain the ability to perform actions (booking flights, accessing private data), we face a critical security flaw: **The "Over-Privileged Agent"**.
+* Giving a local agent plain-text API keys or passwords creates a massive attack surface.
+* If the agent's environment is compromised, the user's entire digital identity is exposed.
 
-| Name                                                               | Description                                                                        |
-| --------------------------------------------------------------------|------------------------------------------------------------------------------------ |
-| [Call Logging](https://start.ktor.io/p/call-logging)               | Logs client requests                                                               |
-| [Routing](https://start.ktor.io/p/routing)                         | Provides a structured routing DSL                                                  |
-| [Authentication](https://start.ktor.io/p/auth)                     | Provides extension point for handling the Authorization header                     |
-| [Content Negotiation](https://start.ktor.io/p/content-negotiation) | Provides automatic content conversion according to Content-Type and Accept headers |
+## ✅ The Solution: Identity Delegation Layer
+Nexus.kt implements a **Delegated Identity Pattern**. Instead of sharing master secrets, the user delegates specific, time-bound authority to the Bridge.
 
-## Building & Running
+1. **User Authentication:** The user logs in via **Auth0** (OIDC), granting Nexus.kt permission to act.
+2. **Token Vaulting:** Nexus.kt securely manages and rotates scoped **JWT Tokens** in a private vault using **MongoDB Atlas**.
+3. **Scoped Execution:** The Bridge executes agent requests using **Minimal Necessary Permissions** (Principle of Least Privilege).
 
-To build or run the project, use one of the following tasks:
+> **"In the era of autonomous agents, Identity is the new Perimeter."**
 
-| Task                                    | Description                                                          |
-| -----------------------------------------|---------------------------------------------------------------------- |
-| `./gradlew test`                        | Run the tests                                                        |
-| `./gradlew build`                       | Build everything                                                     |
-| `./gradlew buildFatJar`                 | Build an executable JAR of the server with all dependencies included |
-| `./gradlew buildImage`                  | Build the docker image to use with the fat JAR                       |
-| `./gradlew publishImageToLocalRegistry` | Publish the docker image locally                                     |
-| `./gradlew run`                         | Run the server                                                       |
-| `./gradlew runDocker`                   | Run using the local docker image                                     |
+---
 
-If the server starts successfully, you'll see the following output:
+## 🛠️ Tech Stack
+- **Kotlin 2.0:** Leveraging Structured Concurrency and Coroutines.
+- **Ktor 3.0:** Asynchronous, non-blocking microservices architecture.
+- **Auth0 (Okta):** Handling M2M (Machine-to-Machine) and Authorization Code flows.
+- **MongoDB Atlas:** Asynchronous persistence layer via the official Kotlin driver.
 
-```
-2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
-2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
-```
+---
 
+## 🚀 Roadmap & Progress
+- [x] **Sprint 1: The Vault Logic.** M2M Handshake with Auth0 & Async MongoDB connection.
+- [ ] **Sprint 2: User Gateway.** Implementing OIDC Login for end-users.
+- [ ] **Sprint 3: Scoped Execution.** Validation engine for agent requests.
+
+---
+
+## 🛠️ Building & Running
+To run the server locally:
+
+| Task | Description |
+| :--- | :--- |
+| `./gradlew run` | Run the server (Default: http://0.0.0.0:8080) |
+| `./gradlew build` | Build the project |
+| `./gradlew test` | Run the test suite |
+| `./gradlew buildImage` | Build the Docker image |
+
+---
+*Created with ❤️ for the Auth0 AI Agents Hackathon.*
