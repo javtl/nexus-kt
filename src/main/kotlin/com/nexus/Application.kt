@@ -3,6 +3,7 @@ package com.nexus
 import com.nexus.com.nexus.plugins.configureSerialization
 import com.nexus.plugins.* // Para traer configureHttpClient y otros
 import com.nexus.database.DatabaseFactory
+import com.nexus.repository.gamerRepository
 import com.nexus.services.AuthService // Asegúrate de que este import sea correcto
 import io.ktor.server.application.*
 
@@ -25,5 +26,7 @@ fun Application.module() {
     configureMonitoring()
 
     // Ahora 'authService' ya existe y se lo podemos pasar a las rutas
-    configureRouting(authService)
+    configureRouting(authService, gamerRepository)
+
+    configureRouting(authService, gamerRepository)
 }

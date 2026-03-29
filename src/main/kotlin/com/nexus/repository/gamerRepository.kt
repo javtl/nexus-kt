@@ -1,5 +1,6 @@
 package com.nexus.repository
 
+import com.mongodb.client.model.Filters
 import com.nexus.database.DatabaseFactory
 import com.nexus.models.GamerProfile
 import com.mongodb.client.model.Filters.eq
@@ -7,7 +8,7 @@ import com.mongodb.client.model.ReplaceOptions
 
 import kotlinx.coroutines.flow.firstOrNull
 
-object GamerRepository {
+object gamerRepository {
 
     // Accedemos a la colección "gamers" usando el modelo GamerProfile
     private val collection by lazy {
@@ -33,6 +34,14 @@ object GamerRepository {
      */
     suspend fun getProfile(id: String): GamerProfile? {
         return collection.find(eq("_id", id)).firstOrNull()
+    }
+
+    suspend fun saveOrUpdate(profile: GamerProfile) {
+        val filter = Filters.eq("_id", profile.id)
+        val options = ReplaceOptions().upsert(true)
+
+        // Esto reemplaza el documento si existe o crea uno nuevo si no
+        collection.replaceOne(filter, profile, options)
     }
 }
 
