@@ -8,8 +8,8 @@ object DatabaseFactory {
     private lateinit var client: MongoClient
     lateinit var db: MongoDatabase
 
-    fun init(environment: ApplicationEnvironment) {
-        // Intentamos leer la propiedad. Si es nula, lanzamos un error descriptivo.
+
+    fun init(environment: ApplicationEnvironment): MongoDatabase {
         val uri = environment.config.propertyOrNull("storage.uri")?.getString()
             ?: throw RuntimeException("CRÍTICO: No se encontró la MONGO_URI en las variables de entorno.")
 
@@ -17,5 +17,7 @@ object DatabaseFactory {
         db = client.getDatabase("nexus_db")
 
         println("Connected to MongoDB Atlas successfully! 🍃")
+
+        return db
     }
 }
