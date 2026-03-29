@@ -5,10 +5,11 @@ import com.nexus.database.DatabaseFactory
 import com.nexus.models.GamerProfile
 import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.ReplaceOptions
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 
 import kotlinx.coroutines.flow.firstOrNull
 
-object gamerRepository {
+class GamerRepository(private val db: MongoDatabase) {
 
     // Accedemos a la colección "gamers" usando el modelo GamerProfile
     private val collection by lazy {

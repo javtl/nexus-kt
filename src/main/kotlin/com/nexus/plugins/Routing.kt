@@ -1,17 +1,19 @@
 package com.nexus.plugins
 
-
 import com.nexus.models.GamerProfile
-import com.nexus.repository.gamerRepository
+import com.nexus.repository.GamerRepository // <--- ASEGÚRATE DE ESTE IMPORT
 import com.nexus.services.AuthService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
-import io.ktor.server.request.receive
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-
-fun Application.configureRouting(authService: AuthService, gamerRepository: gamerRepository) {
+// CAMBIO AQUÍ: de 'Unit' a 'GamerRepository'
+fun Application.configureRouting(
+    authService: AuthService,
+    gamerRepository: GamerRepository
+) {
     routing {
         get("/") {
             call.respondText("Nexus.kt: Bridge Status ONLINE 🟢")
@@ -22,21 +24,20 @@ fun Application.configureRouting(authService: AuthService, gamerRepository: game
                 val token = authService.fetchAgentToken()
                 call.respondText("Token obtenido: $token")
             } catch (e: Exception) {
-                // Esto nos dirá el error real en la pantalla del navegador
                 call.respondText("Error detectado: ${e.localizedMessage}")
             }
         }
 
         post("/auth/sync") {
-            // 1. En el futuro, aquí validaremos el JWT del usuario
-            // Por ahora, simulamos que recibimos los datos del perfil
-            val profile = call.receive<GamerProfile>()
-
             try {
+                val profile = call.receive<GamerProfile>()
+                //
                 gamerRepository.saveOrUpdate(profile)
                 call.respond(HttpStatusCode.Created, mapOf("status" to "Profile Synced"))
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, "Error saving profile")
+                // Imprimimos el error en consola para saber qué falló (Mongo, JSON, etc)
+                e.printStackTrace()
+                call.respond(HttpStatusCode.InternalServerError, "Error saving profile: ${e.message}")
             }
         }
     }
