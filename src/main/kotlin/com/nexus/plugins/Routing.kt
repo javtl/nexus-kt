@@ -20,11 +20,16 @@ fun Application.configureRouting(
         }
 
         get("/test-token") {
-            try {
-                val token = authService.fetchAgentToken()
-                call.respondText("Token obtenido: $token")
-            } catch (e: Exception) {
-                call.respondText("Error detectado: ${e.localizedMessage}")
+            get("/test-token") {
+                try {
+                    println("🔵 Iniciando petición asíncrona a Auth0...")
+                    val token = authService.fetchAgentToken()
+                    println("🟢 Token recibido con éxito")
+                    call.respondText("Resultado: $token")
+                } catch (e: Exception) {
+                    println("🔴 Error en el test: ${e.message}")
+                    call.respondText("Error en el flujo: ${e.localizedMessage}")
+                }
             }
         }
 
@@ -38,6 +43,16 @@ fun Application.configureRouting(
                 // Imprimimos el error en consola para saber qué falló (Mongo, JSON, etc)
                 e.printStackTrace()
                 call.respond(HttpStatusCode.InternalServerError, "Error saving profile: ${e.message}")
+            }
+        }
+
+        get("/auth/agent-status") {
+            // Ktor lanza esto en una corrutina automáticamente
+            try {
+                val tokenInfo = authService.fetchAgentToken()
+                call.respondText("Conexión con Auth0 establecida: $tokenInfo")
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.ServiceUnavailable, "Auth0 fuera de alcance")
             }
         }
     }
