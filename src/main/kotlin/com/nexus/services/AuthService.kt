@@ -16,17 +16,25 @@ class AuthService(
     private val clientSecret = environment.config.property("auth0.clientSecret").getString()
     private val audience = environment.config.property("jwt.audience").getString()
 
-    suspend fun fetchAgentToken(): String {
-        val response: Auth0TokenResponse = httpClient.post("https://$domain/oauth/token") {
+    suspend fun fetchAgentToken(): String = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        val response = httpClient.post("https://$domain/oauth/token") {
             contentType(ContentType.Application.Json)
-            setBody(mapOf(
-                "client_id" to clientId,
-                "client_secret" to clientSecret,
-                "audience" to audience,
-                "grant_type" to "client_credentials"
-            ))
-        }.body()
+            setBody(
+                mapOf(
+                    "client_id" to clientId,
+                    "client_secret" to clientSecret,
+                    "audience" to audience,
+                    "grant_type" to "client_credentials"
+                )
+            )
+        }
 
-        return response.accessToken
+        if (response.status == HttpStatusCode.OK) {
+            val data: Auth0TokenResponse = response.body()
+            data.accessToken
+        } else {
+            val errorMsg = response.status.value.toString()
+            throw RuntimeException("Auth0 API Error: $errorMsg")
+        }
     }
 }
