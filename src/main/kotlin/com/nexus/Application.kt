@@ -3,6 +3,7 @@ package com.nexus
 import com.nexus.plugins.*
 import com.nexus.database.DatabaseFactory
 import com.nexus.repository.GamerRepository
+import com.nexus.services.ActionService // <--- NUEVO IMPORT
 import com.nexus.services.AuthService
 import io.ktor.server.application.*
 
@@ -11,26 +12,32 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 fun Application.module() {
     // 1. CONEXIÓN A BASE DE DATOS
-    // Inicializamos y guardamos la referencia de la DB
+    // Inicializamos y guardamos la referencia de la DB (MongoDB/Postgres)
     val db = DatabaseFactory.init(environment)
 
-    // 2. INSTANCIACIÓN DEL REPOSITORIO
-    // Creamos la herramienta 'gamerRepo' usando el molde 'GamerRepository'
+    // 2. INSTANCIACIÓN DE REPOSITORIOS
+    // Herramienta para persistir perfiles de la Factoría
     val gamerRepo = GamerRepository(db)
 
     // 3. CONFIGURACIÓN DE PLUGINS DE SISTEMA
-    // Importante: Serialization antes que Routing para que entienda JSON
+    // Serialization es CRÍTICO antes de Routing para procesar JSON
     configureSerialization()
     configureMonitoring()
 
-    // 4. CONFIGURACIÓN DE SEGURIDAD Y HTTP
+    // 4. CAPA DE SERVICIOS (Nexus Quant - ID: H)
     val httpClient = configureHttpClient()
+
+    // El "Cerebro": Gestiona tokens M2M con el Vault (Auth0)
     val authService = AuthService(httpClient, environment)
 
-    // Instalamos el plugin de JWT
+    // El "Músculo": El Action Engine que ejecuta órdenes de la IA
+    val actionService = ActionService(authService, httpClient)
+
+    // 5. SEGURIDAD
+    // Configura el verificador de JWT para proteger los endpoints
     configureSecurity()
 
-    // 5. CONFIGURACIÓN DE RUTAS
-    // Pasamos el servicio de Auth y el repositorio de Gamers a las rutas
-    configureRouting(authService, gamerRepo)
+    // 6. CONFIGURACIÓN DE RUTAS (El Enchufado Final)
+    // Inyectamos authService, gamerRepo y el nuevo actionService
+    configureRouting(authService, gamerRepo, actionService)
 }
