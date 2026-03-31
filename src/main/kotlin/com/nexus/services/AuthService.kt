@@ -15,17 +15,13 @@ class AuthService(
     private val domain = environment.config.property("auth0.domain").getString()
     private val clientId = environment.config.property("auth0.clientId").getString()
     private val clientSecret = environment.config.property("auth0.clientSecret").getString()
-    private val audience = environment.config.property("jwt.audience").getString()
 
-    suspend fun fetchAgentToken(): String = withContext(Dispatchers.IO) {
-        try {
-
-            println("🔍 DEBUG: AuthService está a punto de disparar:")
-            println("   - URL Destino: https://$domain/oauth/token")
-            println("   - Usando ClientID: $clientId")
-            println("   - Audience: https://$domain/api/v2/") // o la variable audience
-            println("   - Secret Length: ${clientSecret.length}")
-
+    /**
+     * Esta es la función que "abre el Vault".
+     * Usamos fetchAgentToken porque Nexus Quant actúa como un Agente.
+     */
+    suspend fun fetchAgentToken(): String? = withContext(Dispatchers.IO) {
+        return@withContext try {
             val response: HttpResponse = httpClient.post("https://$domain/oauth/token") {
                 contentType(ContentType.Application.Json)
                 setBody(
@@ -37,13 +33,15 @@ class AuthService(
                     )
                 )
             }
+
             if (response.status == HttpStatusCode.OK) {
+                // Aquí deberías parsear el JSON para devolver solo el access_token string
                 response.bodyAsText()
             } else {
-                throw RuntimeException("Error Auth0: ${response.status}")
+                null
             }
-        } catch(e: Exception){
-                throw RuntimeException("Corroutine Auth Fail: ${e.message}")
-            }
+        } catch (e: Exception) {
+            null
+        }
     }
 }
