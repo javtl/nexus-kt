@@ -31,7 +31,7 @@ fun Application.module() {
     val authService = AuthService(httpClient, environment)
 
     // El "Músculo": El Action Engine que ejecuta órdenes de la IA
-    val actionService = ActionService(authService, httpClient)
+    val actionService = ActionService(authService)
 
     // 5. SEGURIDAD
     // Configura el verificador de JWT para proteger los endpoints
