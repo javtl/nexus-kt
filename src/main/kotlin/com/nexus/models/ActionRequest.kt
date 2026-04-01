@@ -33,19 +33,23 @@ data class ActionRequest(
  */
 @Serializable
 enum class ActionType {
-    // Nexus Gaming (Hackathon Current Focus)
+    // Standard Actions (Low Risk)
     MARK_COMPLETED,
     UPDATE_PROGRESS,
-
-    // Nexus Finance / Stratos Ledger (ID: 1)
-    EXECUTE_TRANSFER,
-    FREEZE_ACCOUNT,
-
-    // The Brick (ID: 9) / General Productivity
     LOG_HABIT_SUCCESS,
 
-    // Nexus Business / Holding Management
-    REVOKE_ACCESS
+    // Sensitive Actions (High Risk - Requires Step-up MFA)
+    EXECUTE_TRANSFER,
+    FREEZE_ACCOUNT,
+    REVOKE_ACCESS;
+
+    /**
+     * Policy: Determines if an action requires extra security (MFA).
+     */
+    fun requiresStepUp(): Boolean = when (this) {
+        EXECUTE_TRANSFER, FREEZE_ACCOUNT, REVOKE_ACCESS -> true
+        else -> false
+    }
 }
 
 /**

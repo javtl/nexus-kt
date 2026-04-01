@@ -1,30 +1,28 @@
 # ==========================================
 # 🔐 SEGURIDAD Y SECRETOS (CRÍTICO)
 # ==========================================
-# Ignora el archivo de configuración real con tus credenciales
-
-
-# Archivos de variables de entorno (estándar de la industria)
+# Variables de entorno y secretos
 .env
 *.env
 .env.local
-
-# Archivos de propiedades sensibles
+.env.*.local
 secrets.properties
 local.properties
 
-# ==========================================
-# 🏗️ GRADLE & BUILD
-# ==========================================
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-bin/
+# Bloqueo específico para Nexus.kt (Ktor configs)
+# Evita que se suban archivos con credenciales hardcoded
+application.conf
+# Pero permite la plantilla si decides crear una
+!application.conf.example
 
 # ==========================================
-# 💻 IDEs (IntelliJ, VS Code, etc.)
+# 💻 IDEs & TOOLS (IntelliJ, VS Code)
 # ==========================================
 .idea/
+# Blindaje extra para las variables de entorno guardadas en el IDE
+.idea/runConfigurations/
+*.run.xml
+cmake-build-*/
 *.iws
 *.iml
 *.ipr
@@ -35,7 +33,36 @@ out/
 .project
 
 # ==========================================
-# 🍎 OS ESPECÍFICOS
+# 🏗️ GRADLE & BUILD
+# ==========================================
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+bin/
+# Archivos de caché y logs de Gradle
+.gradle-snapshot*
+gradle-app.setting
+
+# ==========================================
+# 🍎 OS & LOGS ESPECÍFICOS
 # ==========================================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 Thumbs.db
+ehthumbs.db
+
+# Logs de la aplicación y del sistema
+*.log
+/logs/
+*.temp
+*.tmp
+
+# ==========================================
+# 🧪 TESTING & REPORTS
+# ==========================================
+/build/reports/
+/build/test-results/
+.lucky

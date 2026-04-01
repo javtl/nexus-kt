@@ -29,6 +29,8 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jwt:$ktor_v")
     implementation("io.ktor:ktor-server-sessions:$ktor_v")
 
+    implementation("io.ktor:ktor-server-html-builder-jvm")
+
     // 3. Cliente
     implementation("io.ktor:ktor-client-core:$ktor_v")
     implementation("io.ktor:ktor-client-apache:$ktor_v")
