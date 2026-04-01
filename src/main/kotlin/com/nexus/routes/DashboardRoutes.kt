@@ -1,101 +1,123 @@
 package com.nexus.routes
 
+import com.nexus.repository.GamerProfileRepository
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import io.ktor.server.routing.*
 import kotlinx.html.*
 
-/**
- * NX-301: Nexus Dashboard (Mission Control)
- * UI minimalista con estilo Framer/Moderno y paleta de colores de Kotlin.
- */
-fun Route.dashboardRouting() {
+fun Route.dashboardRouting(gamerRepo: GamerProfileRepository) {
     get("/dashboard") {
+        val totalProfiles = gamerRepo.countProfiles()
+
         call.respondHtml {
             head {
                 meta(name = "viewport", content = "width=device-width, initial-scale=1.0")
                 title { +"Nexus.kt | Mission Control" }
-                // CDN de Tailwind para prototipado rápido de Hackathon
+                link(href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap", rel = "stylesheet")
                 script { src = "https://cdn.tailwindcss.com" }
-                // Fuente moderna (Inter)
-                link(href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap", rel = "stylesheet")
-                style {
-                    """
-                    body { font-family: 'Inter', sans-serif; }
-                    .framer-blob { 
-                        position: absolute; 
-                        filter: blur(100px); 
-                        opacity: 0.5; 
-                        z-index: -1; 
+                script {
+                    unsafe {
+                        +"""
+                        tailwind.config = {
+                            theme: {
+                                extend: {
+                                    fontFamily: {
+                                        sans: ['Inter', 'sans-serif'],
+                                    }
+                                }
+                            }
+                        }
+                        """.trimIndent()
                     }
-                    """
                 }
             }
-            body(classes = "bg-purple-950 text-purple-100 min-h-screen relative overflow-x-hidden") {
 
-                // --- FRAMER-STYLE BACKGROUND GRADIENTS (BLOBS) ---
-                div(classes = "framer-blob bg-purple-600 rounded-full w-96 h-96 -top-24 -left-24") {}
-                div(classes = "framer-blob bg-magenta-500 rounded-full w-80 h-80 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2") {}
-                div(classes = "framer-blob bg-blue-600 rounded-full w-72 h-72 -bottom-24 -right-24") {}
+            // CAMBIO: Fondo más claro (Slate-900 con tintes morados)
+            body(classes = "bg-[#13111C] text-slate-200 min-h-screen relative overflow-x-hidden font-sans") {
+
+                // 🌈 ILUMINACIÓN AMBIENTAL (Más potente para que no se vea tan oscuro)
+                div(classes = "fixed inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(127,82,255,0.3),transparent_50%)]") {}
+                div(classes = "fixed inset-0 bg-[radial-gradient(circle_at_0%_100%,rgba(169,123,255,0.15),transparent_40%)]") {}
+
+                // Halos de luz de fondo (Glows más claros)
+                div(classes = "fixed top-[-10%] left-[-10%] w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[120px] pointer-events-none") {}
+                div(classes = "fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[120px] pointer-events-none") {}
 
                 div(classes = "container mx-auto px-6 py-12 relative z-10") {
 
-                    // --- HEADER (Framer Style: Floating & Blurred) ---
-                    header(classes = "flex flex-col md:flex-row justify-between items-center mb-16 p-6 bg-purple-900/40 border border-purple-800/50 rounded-2xl shadow-lg backdrop-blur-xl gap-6") {
-                        div {
-                            h1(classes = "text-4xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-magenta-400") {
-                                +"NEXUS.KT"
+                    // 🔝 HEADER
+                    header(classes = "flex items-center justify-between mb-16") {
+                        div(classes = "flex items-center gap-4") {
+                            div(classes = "w-10 h-10 bg-gradient-to-br from-[#7F52FF] to-[#C711E1] rounded-xl shadow-[0_0_25px_rgba(127,82,255,0.5)] flex items-center justify-center") {
+                                span(classes = "text-white font-black text-xl") { +"N" }
                             }
-                            p(classes = "text-purple-400 text-xs mt-1 uppercase tracking-widest font-semibold") { +"AI Action Bridge Framework" }
+                            h1(classes = "text-3xl font-extrabold tracking-tighter text-white drop-shadow-sm") {
+                                +"NEXUS"
+                                span(classes = "text-[#A97BFF]") { +".KT" }
+                            }
                         }
-                        div(classes = "flex gap-3") {
-                            statusBadge("MongoDB", "Online", "green")
-                            statusBadge("Auth0", "Active", "purple")
-                            statusBadge("Engine", "Ready", "magenta")
+                        div(classes = "flex gap-4") {
+                            statusBadge("DATABASE", "CONNECTED", "#4ade80")
+                            statusBadge("AUTH0", "ACTIVE", "#A97BFF")
                         }
                     }
 
-                    // --- STATS CARDS (Floating cards with subtle borders) ---
-                    div(classes = "grid grid-cols-1 md:grid-cols-3 gap-8 mb-16") {
-                        statCard("Active Profiles", "12", "text-purple-400", "Users in MongoDB Atlas")
-                        statCard("Total Executions", "45", "text-magenta-400", "Successful AI Actions")
-                        statCard("Security Alerts", "3", "text-orange-400", "MFA Step-up challenges")
-                    }
+                    // 📊 BENTO GRID
+                    div(classes = "grid grid-cols-1 md:grid-cols-12 gap-6") {
 
-                    // --- ACTIVITY FEED (Modern Table Design) ---
-                    div(classes = "bg-purple-900/30 rounded-3xl border border-purple-800/50 shadow-2xl overflow-hidden backdrop-blur-lg") {
-                        div(classes = "px-8 py-6 border-b border-purple-800/50 bg-purple-900/50 flex justify-between items-center") {
-                            h2(classes = "text-xl font-bold text-purple-200") { +"Real-time Activity Feed" }
-                            span(classes = "inline-flex items-center gap-2 px-3 py-1 text-xs text-magenta-400 bg-magenta-500/10 border border-magenta-500/20 rounded-full animate-pulse") {
-                                div(classes = "w-1.5 h-1.5 rounded-full bg-magenta-500") {}
-                                +"Live monitoring"
+                        // Card: Profiles (Grande y Luminosa)
+                        framerCard("md:col-span-8 p-10") {
+                            glowLayer()
+                            cardHeader("TOTAL GAMER PROFILES")
+                            h3(classes = "text-7xl font-black text-white mt-4 tracking-tighter") {
+                                +"$totalProfiles"
+                            }
+                            p(classes = "text-slate-400 text-lg mt-2 font-medium") {
+                                +"Sincronizados vía MongoDB Atlas"
                             }
                         }
 
-                        div(classes = "overflow-x-auto") {
-                            table(classes = "w-full text-left border-collapse") {
-                                thead(classes = "bg-purple-950/70 text-purple-400 text-xs uppercase tracking-wider") {
-                                    tr {
-                                        th(classes = "px-8 py-5 font-semibold") { +"Action Type" }
-                                        th(classes = "px-8 py-5 font-semibold") { +"Target Resource" }
-                                        th(classes = "px-8 py-5 font-semibold text-center") { +"Status" }
-                                        th(classes = "px-8 py-5 font-semibold text-right") { +"Timestamp" }
+                        // Card: Status
+                        framerCard("md:col-span-4 p-8 flex flex-col justify-between") {
+                            glowLayer()
+                            div {
+                                cardHeader("ENGINE STATUS")
+                                h3(classes = "text-4xl font-bold text-[#A97BFF] mt-2") { +"READY" }
+                            }
+                            div(classes = "flex items-center gap-2 text-sm text-slate-400 animate-pulse") {
+                                div(classes = "w-2 h-2 bg-[#4ade80] rounded-full") {}
+                                +"Listening for AI actions..."
+                            }
+                        }
+
+                        // Card: Activity Table (Ahora ocupa más espacio)
+                        framerCard("md:col-span-12 overflow-hidden") {
+                            div(classes = "px-8 py-6 border-b border-white/10 bg-white/5") {
+                                h2(classes = "text-xl font-bold text-white") { +"Recent Activity Feed" }
+                            }
+                            div(classes = "overflow-x-auto") {
+                                table(classes = "w-full text-left") {
+                                    thead(classes = "bg-white/5 text-slate-400 text-xs uppercase tracking-widest") {
+                                        tr {
+                                            th(classes = "px-8 py-4") { +"Event" }
+                                            th(classes = "px-8 py-4 text-center") { +"Status" }
+                                            th(classes = "px-8 py-4 text-right") { +"Timestamp" }
+                                        }
+                                    }
+                                    tbody(classes = "divide-y divide-white/5") {
+                                        activityRow("MARK_COMPLETED", "Success", "Just now", "#4ade80")
+                                        activityRow("EXECUTE_TRANSFER", "Step-up Req", "14m ago", "#fcd34d")
+                                        activityRow("REVOKE_ACCESS", "Denied", "2h ago", "#ef4444")
+                                        activityRow("SYNC_PROFILE", "Success", "5h ago", "#4ade80")
                                     }
                                 }
-                                tbody(classes = "divide-y divide-purple-800/30") {
-                                    // Datos Mock
-                                    activityRow("MARK_COMPLETED", "steam:app_2077", "Success", "Just now")
-                                    activityRow("EXECUTE_TRANSFER", "vault:primary", "Step-up Req", "12m ago")
-                                    activityRow("UPDATE_PROFILE", "gamer:nexus_01", "Success", "1h ago")
-                                    activityRow("REVOKE_ACCESS", "api:discord_bridge", "Denied", "3h ago")
-                                }
                             }
                         }
                     }
 
-                    // --- FOOTER (Subtle & Minimal) ---
-                    footer(classes = "mt-16 text-center text-purple-600 text-xs") {
-                        +"Nexus.kt Framework v1.0.0-rc1 | Built for Hackathon 2026"
+                    footer(classes = "mt-20 text-center text-slate-500 text-xs tracking-widest uppercase") {
+                        +"Nexus.kt Architecture • Hackathon 2026"
                     }
                 }
             }
@@ -103,40 +125,54 @@ fun Route.dashboardRouting() {
     }
 }
 
-// --- UI COMPONENTS (HELPERS) ---
+// 🧩 COMPONENTES PULIDOS
 
-fun FlowContent.statusBadge(label: String, status: String, color: String) {
-    div(classes = "flex items-center gap-2 px-3 py-1.5 bg-$color-500/10 border border-$color-500/30 rounded-full") {
-        div(classes = "w-2 h-2 rounded-full bg-$color-500 shadow-[0_0_8px_rgba($color,0.6)] animate-pulse") {}
-        span(classes = "text-[10px] font-bold text-$color-300 uppercase tracking-tight") { +"$label: $status" }
+fun FlowContent.framerCard(customClasses: String, block: DIV.() -> Unit) {
+    div(classes = "relative bg-white/[0.03] border border-white/10 backdrop-blur-2xl rounded-[2rem] transition-all duration-500 hover:bg-white/[0.06] hover:border-white/20 $customClasses") {
+        block()
     }
 }
 
-fun FlowContent.statCard(title: String, value: String, colorClass: String, subtitle: String) {
-    div(classes = "bg-purple-900/40 p-10 rounded-3xl border border-purple-800/50 hover:border-purple-600 transition-all shadow-xl backdrop-blur-sm group") {
-        p(classes = "text-purple-400 text-sm font-medium mb-2 group-hover:text-purple-300") { +title }
-        h3(classes = "text-5xl font-black mb-3 tracking-tighter $colorClass") { +value }
-        p(classes = "text-purple-600 text-xs italic") { +subtitle }
+fun DIV.glowLayer() {
+    div(classes = "absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-700 pointer-events-none") {
+        div(classes = "absolute -top-24 -left-24 w-48 h-48 bg-purple-500/20 blur-[60px]") {}
     }
 }
 
-fun TBODY.activityRow(action: String, target: String, status: String, time: String) {
-    tr(classes = "hover:bg-purple-800/40 transition-colors group") {
+fun DIV.cardHeader(title: String) {
+    span(classes = "text-[11px] font-black tracking-[0.2em] text-slate-500 uppercase") {
+        +title
+    }
+}
+
+fun FlowContent.statusBadge(label: String, status: String, hexColor: String) {
+    div(classes = "flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-xl backdrop-blur-md shadow-sm") {
+        div(classes = "w-2 h-2 rounded-full animate-pulse") {
+            style = "background-color: $hexColor; box-shadow: 0 0 10px $hexColor;"
+        }
+        span(classes = "text-[10px] font-bold text-slate-400 tracking-wider") { +"$label" }
+        span(classes = "text-[11px] font-black") {
+            style = "color: $hexColor;"
+            +status
+        }
+    }
+}
+
+fun TBODY.activityRow(action: String, status: String, time: String, hexStatusColor: String) {
+    tr(classes = "group hover:bg-white/[0.02] transition-colors") {
         td(classes = "px-8 py-5") {
-            span(classes = "font-mono text-xs text-magenta-300 bg-magenta-500/10 px-3 py-1 rounded border border-magenta-500/20") { +action }
+            span(classes = "font-mono text-sm text-[#A97BFF] bg-[#A97BFF]/10 px-3 py-1 rounded-lg border border-[#A97BFF]/20") {
+                +action
+            }
         }
-        td(classes = "px-8 py-5 text-sm text-purple-200 font-medium") { +target }
         td(classes = "px-8 py-5 text-center") {
-            val (badgeClass, dotClass) = when {
-                status.contains("Success") -> "text-green-300 bg-green-400/10 border-green-500/20" to "bg-green-500"
-                status.contains("Step-up") -> "text-orange-300 bg-orange-400/10 border-orange-500/20" to "bg-orange-500"
-                else -> "text-magenta-300 bg-magenta-500/10 border-magenta-500/20" to "bg-magenta-500"
-            }
-            span(classes = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold border $badgeClass") {
-                div(classes = "w-1.5 h-1.5 rounded-full $dotClass") {}
-                +status.uppercase()
+            span(classes = "text-xs font-bold px-3 py-1 rounded-full border") {
+                style = "color: $hexStatusColor; border-color: ${hexStatusColor}40; background-color: ${hexStatusColor}10;"
+                +status
             }
         }
-        td(classes = "px-8 py-5 text-right text-xs text-purple-600 font-mono") { +time }
+        td(classes = "px-8 py-5 text-right text-xs text-slate-500 font-mono") {
+            +time
+        }
     }
 }

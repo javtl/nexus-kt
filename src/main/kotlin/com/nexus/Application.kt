@@ -2,7 +2,7 @@ package com.nexus
 
 import com.nexus.plugins.*
 import com.nexus.database.DatabaseFactory
-import com.nexus.repository.GamerRepository
+import com.nexus.repository.GamerProfileRepository
 import com.nexus.services.ActionService // <--- NUEVO IMPORT
 import com.nexus.services.AuthService
 import io.ktor.server.application.*
@@ -17,7 +17,7 @@ fun Application.module() {
 
     // 2. INSTANCIACIÓN DE REPOSITORIOS
     // Herramienta para persistir perfiles de la Factoría
-    val gamerRepo = GamerRepository(db)
+    val gamerRepo = GamerProfileRepository(db)
 
     // 3. CONFIGURACIÓN DE PLUGINS DE SISTEMA
     // Serialization es CRÍTICO antes de Routing para procesar JSON
