@@ -8,7 +8,16 @@ import kotlinx.html.*
 
 fun Route.dashboardRouting(gamerRepo: GamerProfileRepository) {
     get("/dashboard") {
-        val totalProfiles = gamerRepo.countProfiles()
+
+        // 1. Fetching all profiles for the dynamic list
+        val profiles = try {
+            gamerRepo.getAllProfiles() // Make sure this method exists in your Repo
+        } catch (e: Exception) {
+            System.err.println("🔴 Mongo Connection Error: ${e.message}")
+            emptyList()
+        }
+
+        val totalProfiles = profiles.size.toLong()
 
         call.respondHtml {
             head {
@@ -33,20 +42,15 @@ fun Route.dashboardRouting(gamerRepo: GamerProfileRepository) {
                 }
             }
 
-            // CAMBIO: Fondo más claro (Slate-900 con tintes morados)
             body(classes = "bg-[#13111C] text-slate-200 min-h-screen relative overflow-x-hidden font-sans") {
 
-                // 🌈 ILUMINACIÓN AMBIENTAL (Más potente para que no se vea tan oscuro)
                 div(classes = "fixed inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(127,82,255,0.3),transparent_50%)]") {}
                 div(classes = "fixed inset-0 bg-[radial-gradient(circle_at_0%_100%,rgba(169,123,255,0.15),transparent_40%)]") {}
-
-                // Halos de luz de fondo (Glows más claros)
                 div(classes = "fixed top-[-10%] left-[-10%] w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[120px] pointer-events-none") {}
                 div(classes = "fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[120px] pointer-events-none") {}
 
                 div(classes = "container mx-auto px-6 py-12 relative z-10") {
 
-                    // 🔝 HEADER
                     header(classes = "flex items-center justify-between mb-16") {
                         div(classes = "flex items-center gap-4") {
                             div(classes = "w-10 h-10 bg-gradient-to-br from-[#7F52FF] to-[#C711E1] rounded-xl shadow-[0_0_25px_rgba(127,82,255,0.5)] flex items-center justify-center") {
@@ -63,10 +67,8 @@ fun Route.dashboardRouting(gamerRepo: GamerProfileRepository) {
                         }
                     }
 
-                    // 📊 BENTO GRID
                     div(classes = "grid grid-cols-1 md:grid-cols-12 gap-6") {
 
-                        // Card: Profiles (Grande y Luminosa)
                         framerCard("md:col-span-8 p-10") {
                             glowLayer()
                             cardHeader("TOTAL GAMER PROFILES")
@@ -74,11 +76,10 @@ fun Route.dashboardRouting(gamerRepo: GamerProfileRepository) {
                                 +"$totalProfiles"
                             }
                             p(classes = "text-slate-400 text-lg mt-2 font-medium") {
-                                +"Sincronizados vía MongoDB Atlas"
+                                +"Synced via MongoDB Atlas"
                             }
                         }
 
-                        // Card: Status
                         framerCard("md:col-span-4 p-8 flex flex-col justify-between") {
                             glowLayer()
                             div {
@@ -91,25 +92,34 @@ fun Route.dashboardRouting(gamerRepo: GamerProfileRepository) {
                             }
                         }
 
-                        // Card: Activity Table (Ahora ocupa más espacio)
+                        // 📋 DYNAMIC GAMER TABLE
                         framerCard("md:col-span-12 overflow-hidden") {
                             div(classes = "px-8 py-6 border-b border-white/10 bg-white/5") {
-                                h2(classes = "text-xl font-bold text-white") { +"Recent Activity Feed" }
+                                h2(classes = "text-xl font-bold text-white") { +"Live Synchronized Profiles" }
                             }
                             div(classes = "overflow-x-auto") {
                                 table(classes = "w-full text-left") {
                                     thead(classes = "bg-white/5 text-slate-400 text-xs uppercase tracking-widest") {
                                         tr {
-                                            th(classes = "px-8 py-4") { +"Event" }
-                                            th(classes = "px-8 py-4 text-center") { +"Status" }
-                                            th(classes = "px-8 py-4 text-right") { +"Timestamp" }
+                                            th(classes = "px-8 py-4") { +"Gamer Username" }
+                                            th(classes = "px-8 py-4") { +"Email Address" }
+                                            th(classes = "px-8 py-4 text-center") { +"Level" }
+                                            th(classes = "px-8 py-4 text-right") { +"Auth0 ID" }
                                         }
                                     }
                                     tbody(classes = "divide-y divide-white/5") {
-                                        activityRow("MARK_COMPLETED", "Success", "Just now", "#4ade80")
-                                        activityRow("EXECUTE_TRANSFER", "Step-up Req", "14m ago", "#fcd34d")
-                                        activityRow("REVOKE_ACCESS", "Denied", "2h ago", "#ef4444")
-                                        activityRow("SYNC_PROFILE", "Success", "5h ago", "#4ade80")
+                                        if (profiles.isEmpty()) {
+                                            tr {
+                                                td(classes = "px-8 py-10 text-slate-500 italic") {
+                                                    colSpan = "4"
+                                                    +"No profiles synchronized. Please send a POST request via Postman."
+                                                }
+                                            }
+                                        } else {
+                                            profiles.forEach { profile ->
+                                                gamerRow(profile.username, profile.email, profile.level, profile.id)
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -125,8 +135,28 @@ fun Route.dashboardRouting(gamerRepo: GamerProfileRepository) {
     }
 }
 
-// 🧩 COMPONENTES PULIDOS
+// 🧩 RE-USABLE COMPONENTS
 
+fun TBODY.gamerRow(name: String, email: String, level: Int, id: String) {
+    tr(classes = "group hover:bg-white/[0.02] transition-colors") {
+        td(classes = "px-8 py-5") {
+            span(classes = "font-semibold text-white") { +name }
+        }
+        td(classes = "px-8 py-5 text-slate-400 text-sm") {
+            +email
+        }
+        td(classes = "px-8 py-5 text-center") {
+            span(classes = "text-xs font-bold px-3 py-1 rounded-full border border-[#A97BFF]/40 bg-[#A97BFF]/10 text-[#A97BFF]") {
+                +"LVL $level"
+            }
+        }
+        td(classes = "px-8 py-5 text-right text-[10px] text-slate-600 font-mono") {
+            +id
+        }
+    }
+}
+
+// The rest of your UI components (framerCard, glowLayer, cardHeader, statusBadge) remain exactly as you have them.
 fun FlowContent.framerCard(customClasses: String, block: DIV.() -> Unit) {
     div(classes = "relative bg-white/[0.03] border border-white/10 backdrop-blur-2xl rounded-[2rem] transition-all duration-500 hover:bg-white/[0.06] hover:border-white/20 $customClasses") {
         block()
@@ -154,25 +184,6 @@ fun FlowContent.statusBadge(label: String, status: String, hexColor: String) {
         span(classes = "text-[11px] font-black") {
             style = "color: $hexColor;"
             +status
-        }
-    }
-}
-
-fun TBODY.activityRow(action: String, status: String, time: String, hexStatusColor: String) {
-    tr(classes = "group hover:bg-white/[0.02] transition-colors") {
-        td(classes = "px-8 py-5") {
-            span(classes = "font-mono text-sm text-[#A97BFF] bg-[#A97BFF]/10 px-3 py-1 rounded-lg border border-[#A97BFF]/20") {
-                +action
-            }
-        }
-        td(classes = "px-8 py-5 text-center") {
-            span(classes = "text-xs font-bold px-3 py-1 rounded-full border") {
-                style = "color: $hexStatusColor; border-color: ${hexStatusColor}40; background-color: ${hexStatusColor}10;"
-                +status
-            }
-        }
-        td(classes = "px-8 py-5 text-right text-xs text-slate-500 font-mono") {
-            +time
         }
     }
 }

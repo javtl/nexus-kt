@@ -14,7 +14,7 @@ import io.ktor.server.routing.*
 
 fun Application.configureRouting(
     authService: AuthService,
-    gamerRepository: GamerProfileRepository, // <-- Este es el nombre oficial del parámetro
+    gamerRepository: GamerProfileRepository,
     actionService: ActionService
 ) {
     routing {
@@ -23,42 +23,43 @@ fun Application.configureRouting(
             call.respondText("Nexus.kt: Bridge Status ONLINE 🟢")
         }
 
+        // 1. Test de Token
         get("/test-token") {
             try {
                 val token = authService.fetchAgentToken()
                 call.respondText("Resultado: $token")
             } catch (e: Exception) {
-                call.respondText("Error en el flujo: ${e.localizedMessage}")
+                call.respondText("Error: ${e.localizedMessage}")
             }
         }
 
-        // 3. Sincronización de Perfiles (Gamer Data)
+        // 2. Sincronización de Perfiles (Postman envía aquí)
         post("/auth/sync") {
             try {
                 val profile = call.receive<GamerProfile>()
-                // SOLUCIÓN: Usamos 'saveProfile' que es el método que dejamos en el repo
                 gamerRepository.saveProfile(profile)
                 call.respond(HttpStatusCode.Created, mapOf("status" to "Profile Synced"))
             } catch (e: Exception) {
-                e.printStackTrace()
-                call.respond(HttpStatusCode.InternalServerError, "Error saving profile: ${e.message}")
+                call.respond(HttpStatusCode.InternalServerError, "Error: ${e.message}")
             }
         }
 
+        // 3. Status de Agente
         get("/auth/agent-status") {
             try {
                 val tokenInfo = authService.fetchAgentToken()
-                call.respondText("Conexión con Auth0 establecida: $tokenInfo")
+                call.respondText("Conexión Auth0 OK: $tokenInfo")
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.ServiceUnavailable, "Auth0 fuera de alcance")
+                call.respond(HttpStatusCode.ServiceUnavailable, "Auth0 Offline")
             }
         }
 
-        // 5. REGISTRO DEL ACTION ENGINE
+        // --- LAS RUTAS MODULARES ---
+
+        // Esto inyecta las rutas de acciones
         actionRouting(actionService)
 
-        // 6. DASHBOARD (PASANDO EL REPO CORRECTO)
-        // SOLUCIÓN: Le pasamos 'gamerRepository' porque así se llama arriba en la función
+        // Esto inyecta la ruta /dashboard (usa el archivo DashboardRoutes.kt)
         dashboardRouting(gamerRepository)
     }
 }

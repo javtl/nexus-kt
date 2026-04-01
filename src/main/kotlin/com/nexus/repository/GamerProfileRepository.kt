@@ -6,6 +6,7 @@ import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import com.nexus.database.DatabaseFactory
 import com.nexus.models.GamerProfile
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.toList
 
 // Recomendado: Renombrar a GamerProfileRepository para que coincida con el Modelo
 class GamerProfileRepository(private val db: MongoDatabase) {
@@ -39,5 +40,9 @@ class GamerProfileRepository(private val db: MongoDatabase) {
      */
     suspend fun getProfile(id: String): GamerProfile? {
         return collection.find(eq("_id", id)).firstOrNull()
+    }
+
+    suspend fun getAllProfiles(): List<GamerProfile> {
+        return collection.find().toList()
     }
 }
