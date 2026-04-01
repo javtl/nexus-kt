@@ -3,6 +3,7 @@ package com.nexus.plugins
 import com.nexus.models.GamerProfile
 import com.nexus.repository.GamerRepository
 import com.nexus.routes.actionRouting // <--- Importante: Importa la extensión de rutas de acción
+import com.nexus.routes.dashboardRouting
 import com.nexus.services.ActionService
 import com.nexus.services.AuthService
 import io.ktor.http.HttpStatusCode
@@ -65,5 +66,7 @@ fun Application.configureRouting(
         // 5. REGISTRO DEL ACTION ENGINE (ID: H)
         // Aquí es donde Nexus Quant empieza a escuchar órdenes de la IA
         actionRouting(actionService)
+
+        dashboardRouting()
     }
 }
