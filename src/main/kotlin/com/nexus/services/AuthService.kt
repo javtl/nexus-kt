@@ -1,12 +1,19 @@
 package com.nexus.services
 
 import io.ktor.client.*
+import io.ktor.client.call.* // 👈 IMPORTANTE: Para que funcione .body()
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Auth0TokenResponse(
+    val access_token: String,
+    val scope: String? = null,
+    val expires_in: Int,
+    val token_type: String
+)
 
 class AuthService(
     private val httpClient: HttpClient,
@@ -15,8 +22,9 @@ class AuthService(
     private val domain = environment.config.property("auth0.domain").getString()
     private val clientId = environment.config.property("auth0.clientId").getString()
     private val clientSecret = environment.config.property("auth0.clientSecret").getString()
+    private val audience = environment.config.property("auth0.audience").getString() // 👈 FALTABA ESTO
 
-    suspend fun fetchAgentToken(): String = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+    suspend fun fetchAgentToken(): String {
         val response = httpClient.post("https://$domain/oauth/token") {
             contentType(ContentType.Application.Json)
             setBody(
@@ -29,12 +37,11 @@ class AuthService(
             )
         }
 
-        if (response.status == HttpStatusCode.OK) {
-            val data: Auth0TokenResponse = response.body()
-            data.accessToken
+        return if (response.status == HttpStatusCode.OK) {
+            val data = response.body<Auth0TokenResponse>() // 👈 Uso correcto de .body()
+            data.access_token // 👈 Usamos el nombre exacto del JSON
         } else {
-            val errorMsg = response.status.value.toString()
-            throw RuntimeException("Auth0 API Error: $errorMsg")
+            throw RuntimeException("Auth0 API Error: ${response.status}")
         }
     }
 }
