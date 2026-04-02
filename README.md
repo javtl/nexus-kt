@@ -36,8 +36,8 @@ Nexus.kt implements a **Delegated Identity Pattern**. Instead of sharing master 
 
 ## 🚀 Roadmap & Progress
 - [x] **Sprint 1: The Vault Logic.** M2M Handshake with Auth0 & Async MongoDB connection.
-- [ ] **Sprint 2: User Gateway.** Implementing OIDC Login for end-users.
-- [ ] **Sprint 3: Scoped Execution.** Validation engine for agent requests.
+- [x] **Sprint 2: User Gateway.** Implementing OIDC Login for end-users.
+- [x] **Sprint 3: Scoped Execution.** Validation engine for agent requests.
 
 ---
 
