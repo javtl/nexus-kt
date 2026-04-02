@@ -16,32 +16,25 @@ class AuthService(
     private val clientId = environment.config.property("auth0.clientId").getString()
     private val clientSecret = environment.config.property("auth0.clientSecret").getString()
 
-    /**
-     * Esta es la función que "abre el Vault".
-     * Usamos fetchAgentToken porque Nexus Quant actúa como un Agente.
-     */
-    suspend fun fetchAgentToken(): String? = withContext(Dispatchers.IO) {
-        return@withContext try {
-            val response: HttpResponse = httpClient.post("https://$domain/oauth/token") {
-                contentType(ContentType.Application.Json)
-                setBody(
-                    mapOf(
-                        "client_id" to clientId,
-                        "client_secret" to clientSecret,
-                        "audience" to "https://$domain/api/v2/",
-                        "grant_type" to "client_credentials"
-                    )
+    suspend fun fetchAgentToken(): String = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        val response = httpClient.post("https://$domain/oauth/token") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                mapOf(
+                    "client_id" to clientId,
+                    "client_secret" to clientSecret,
+                    "audience" to audience,
+                    "grant_type" to "client_credentials"
                 )
-            }
+            )
+        }
 
-            if (response.status == HttpStatusCode.OK) {
-                // Aquí deberías parsear el JSON para devolver solo el access_token string
-                response.bodyAsText()
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            null
+        if (response.status == HttpStatusCode.OK) {
+            val data: Auth0TokenResponse = response.body()
+            data.accessToken
+        } else {
+            val errorMsg = response.status.value.toString()
+            throw RuntimeException("Auth0 API Error: $errorMsg")
         }
     }
 }

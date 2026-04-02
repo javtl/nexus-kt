@@ -1,4 +1,4 @@
-package com.nexus.plugins
+package com.nexus.plugins // Corregido el package que estaba duplicado
 
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -10,8 +10,7 @@ fun Application.configureSerialization() {
         json(Json {
             prettyPrint = true
             isLenient = true
-            ignoreUnknownKeys = true // Esto evita errores si envías campos de más en Postman
-            encodeDefaults = true
+            ignoreUnknownKeys = true // Importante para que no falle si Auth0 añade campos nuevos
         })
     }
 }
